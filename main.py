@@ -12,15 +12,18 @@ contents = response.text
 soup = BeautifulSoup(contents, "html.parser")
 
 song_tags = soup.select(".a-no-trucate")
+artist_tags = soup.find_all(name="span", class_="a-font-primary-s")
 song_titles = [song.getText().strip() for i, song in enumerate(song_tags) if i % 2 == 0]
+artists = [artist.getText().strip() for artist in artist_tags]
+for artist in artists:
+    if artist == "RIAA Certification:":
+        artists.remove(artist)
 
-# print(song_titles)
-# print(len(song_titles))
 
 # Setup Spotify API using Spotipy library/module and use it to search for and create a new playlist comprised of top
 # 100 songs from Billboard
-cid = "!!Retrieve from Spotify!!"
-secret = "!!Retrieve from Spotify!!"
+cid = "!! Get From Spotify !!"
+secret = "!! Get From Spotify !!"
 
 sp = spotipy.Spotify(
     auth_manager=SpotifyOAuth(
@@ -36,8 +39,15 @@ sp = spotipy.Spotify(
 user_id = sp.current_user()["id"]
 
 # Searching Spotify for songs by title
-song_uris = [sp.search(title)['tracks']['items'][0]['uri'] for title in song_titles]
 
+# song_uris = [sp.search(title)['tracks']['items'][0]['uri'] for title in song_titles]
+song_uris = []
+for i, title in enumerate(song_titles):
+    results = sp.search(q=f"track={title} artist={artists[i]}", type="track")
+    try:
+        song_uris.append(results["tracks"]["items"][0]["uri"])
+    except:
+        pass
 # print(song_uris)
 # print(len(song_uris))
 
